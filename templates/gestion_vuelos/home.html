@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Inicio - AeroGestión{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<div class="hero-section">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h1><i class="fas fa-plane me-3"></i>Bienvenido a AeroGestión</h1>
+            <p class="lead">Sistema integral para gestión de aerolíneas, vuelos, reservas y paquetes.</p>
+            {% if not user.is_authenticated %}
+                <div class="mt-4">
+                    <a class="btn btn-light btn-lg me-3" href="{% url 'gestion_vuelos:login' %}">
+                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                    </a>
+                    <a class="btn btn-outline-light btn-lg" href="{% url 'gestion_vuelos:registro' %}">
+                        <i class="fas fa-user-plus me-2"></i>Registrarse
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-4 text-center">
+            <i class="fas fa-plane-departure" style="font-size: 8rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row mb-5">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <i class="fas fa-plane-departure stats-icon"></i>
+            <div class="stats-number">{{ total_vuelos|default:0 }}</div>
+            <div class="stats-label">Total de Vuelos</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <i class="fas fa-calendar-day stats-icon" style="color: #10b981;"></i>
+            <div class="stats-number" style="color: #10b981;">{{ vuelos_hoy|default:0 }}</div>
+            <div class="stats-label">Vuelos Hoy</div>
+        </div>
+    </div>
+
+    {% if es_admin %}
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <i class="fas fa-users stats-icon" style="color: #f97316;"></i>
+            <div class="stats-number" style="color: #f97316;">{{ total_pasajeros|default:0 }}</div>
+            <div class="stats-label">Pasajeros Registrados</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <i class="fas fa-ticket-alt stats-icon" style="color: #8b5cf6;"></i>
+            <div class="stats-number" style="color: #8b5cf6;">{{ reservas_activas|default:0 }}</div>
+            <div class="stats-label">Reservas Activas</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Próximos Vuelos -->
+<div class="card mb-5">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Próximos Vuelos</h5>
+    </div>
+    <div class="card-body">
+        {% if proximos_vuelos %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-code me-2"></i>Código</th>
+                            <th><i class="fas fa-route me-2"></i>Ruta</th>
+                            <th><i class="fas fa-clock me-2"></i>Salida</th>
+                            <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                            <th><i class="fas fa-chair me-2"></i>Disponibilidad</th>
+                            <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vuelo in proximos_vuelos %}
+                        <tr>
+                            <td><strong class="text-primary">{{ vuelo.codigo_vuelo }}</strong></td>
+                            <td>{{ vuelo.origen }} <i class="fas fa-arrow-right text-muted mx-1"></i> {{ vuelo.destino }}</td>
+                            <td>
+                                <strong>{{ vuelo.fecha_salida|date:"d/m/Y" }}</strong><br>
+                                <small class="text-muted">{{ vuelo.fecha_salida|date:"H:i" }}</small>
+                            </td>
+                            <td><span class="badge bg-success">{{ vuelo.get_estado_display }}</span></td>
+                            <td>
+                                {# % disponible = asientos_disponibles / capacidad * 100 #}
+                                {% widthratio vuelo.asientos_disponibles vuelo.avion.capacidad 100 as pct_disponible %}
+                                <div class="d-flex align-items-center">
+                                    <div class="progress me-2" style="width: 70px; height: 8px;">
+                                        <div class="progress-bar bg-info" style="width: {{ pct_disponible }}%"></div>
+                                    </div>
+                                    <small><strong>{{ vuelo.asientos_disponibles }}</strong>/{{ vuelo.avion.capacidad }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'gestion_vuelos:detalle_vuelo' vuelo.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'gestion_vuelos:crear_reserva' vuelo.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-plane text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                <h5 class="mt-3 text-muted">No hay vuelos programados</h5>
+                <p class="text-muted">Pronto aparecerán aquí.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Acciones Rápidas (solo admin) -->
+{% if es_admin %}
+<div class="card">
+    <div class="card-header"><h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Acciones Rápidas (Admin)</h5></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{% url 'gestion_vuelos:buscar_vuelos' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                    <i class="fas fa-search fa-2x mb-2"></i>
+                    <strong>Buscar Vuelos</strong>
+                    <small class="text-muted mt-1">Encuentra vuelos disponibles</small>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{% url 'gestion_vuelos:lista_paquetes' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                    <i class="fas fa-suitcase-rolling fa-2x mb-2"></i>
+                    <strong>Paquetes</strong>
+                    <small class="text-muted mt-1">Gestionar paquetes</small>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{% url 'gestion_vuelos:lista_pasajeros' %}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <strong>Pasajeros</strong>
+                    <small class="text-muted mt-1">Gestionar pasajeros</small>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{% url 'gestion_vuelos:reportes' %}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                    <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                    <strong>Reportes</strong>
+                    <small class="text-muted mt-1">Analytics y estadísticas</small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

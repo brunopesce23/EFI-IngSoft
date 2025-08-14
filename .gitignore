@@ -1,0 +1,22 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.log
+db.sqlite3
+*.sqlite3
+media/
+
+# Entornos
+.venv/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Node/Next
+node_modules/
+.next/
+dist/
+pnpm-lock.yaml

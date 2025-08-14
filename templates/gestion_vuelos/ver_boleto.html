@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Boleto Electrónico - {{ boleto.codigo_barra }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white text-center">
+                <h3><i class="fas fa-plane"></i> BOLETO ELECTRÓNICO</h3>
+                <h5>{{ boleto.reserva.vuelo.codigo_vuelo }}</h5>
+            </div>
+            <div class="card-body">
+                <!-- Información del vuelo -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="text-primary"><i class="fas fa-plane-departure"></i> SALIDA</h5>
+                        <h4>{{ boleto.reserva.vuelo.origen }}</h4>
+                        <p class="mb-0">{{ boleto.reserva.vuelo.fecha_salida|date:"d/m/Y" }}</p>
+                        <h3 class="text-primary">{{ boleto.reserva.vuelo.fecha_salida|date:"H:i" }}</h3>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <h5 class="text-primary"><i class="fas fa-plane-arrival"></i> LLEGADA</h5>
+                        <h4>{{ boleto.reserva.vuelo.destino }}</h4>
+                        <p class="mb-0">{{ boleto.reserva.vuelo.fecha_llegada|date:"d/m/Y" }}</p>
+                        <h3 class="text-primary">{{ boleto.reserva.vuelo.fecha_llegada|date:"H:i" }}</h3>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Información del pasajero y asiento -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <h6 class="text-muted">PASAJERO</h6>
+                        <h5>{{ boleto.reserva.pasajero.nombre }}</h5>
+                        <p class="mb-0">{{ boleto.reserva.pasajero.get_tipo_documento_display }}: {{ boleto.reserva.pasajero.documento }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">ASIENTO</h6>
+                        <h2 class="text-primary">{{ boleto.reserva.asiento.numero }}</h2>
+                        <p class="mb-0">{{ boleto.reserva.asiento.get_tipo_display }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">AVIÓN</h6>
+                        <h5>{{ boleto.reserva.vuelo.avion.modelo }}</h5>
+                        <p class="mb-0">Capacidad: {{ boleto.reserva.vuelo.avion.capacidad }} pax</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Códigos y estado -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <h6 class="text-muted">CÓDIGO DE RESERVA</h6>
+                        <h4 class="font-monospace">{{ boleto.reserva.codigo_reserva }}</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">CÓDIGO DE BOLETO</h6>
+                        <h4 class="font-monospace">{{ boleto.codigo_barra }}</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">ESTADO</h6>
+                        {% if boleto.estado == 'emitido' %}
+                            <span class="badge bg-success fs-6">{{ boleto.get_estado_display }}</span>
+                        {% elif boleto.estado == 'usado' %}
+                            <span class="badge bg-primary fs-6">{{ boleto.get_estado_display }}</span>
+                        {% else %}
+                            <span class="badge bg-danger fs-6">{{ boleto.get_estado_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Código de barras simulado -->
+                <div class="text-center mb-4">
+                    <div class="bg-dark text-white p-3 font-monospace" style="letter-spacing: 2px;">
+                        |||||| || ||| |||| | ||| || |||||| {{ boleto.codigo_barra }} |||||| || ||| |||| | ||| || ||||||
+                    </div>
+                </div>
+                
+                <!-- Información adicional -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Información Importante:</h6>
+                    <ul class="mb-0">
+                        <li>Presenta este boleto y tu documento de identidad en el aeropuerto</li>
+                        <li>Llega al aeropuerto al menos 2 horas antes del vuelo</li>
+                        <li>Verifica las restricciones de equipaje</li>
+                        <li>Boleto emitido el {{ boleto.fecha_emision|date:"d/m/Y H:i" }}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Imprimir Boleto
+                </button>
+                <a href="{% url 'gestion_vuelos:detalle_reserva' boleto.reserva.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver a la Reserva
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .navbar, .footer {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}

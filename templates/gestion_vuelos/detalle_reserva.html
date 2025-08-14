@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Reserva {{ reserva.codigo_reserva }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4><i class="fas fa-ticket-alt"></i> Reserva {{ reserva.codigo_reserva }}</h4>
+                {% if reserva.estado == 'confirmada' %}
+                    <span class="badge bg-success fs-6">{{ reserva.get_estado_display }}</span>
+                {% elif reserva.estado == 'pagada' %}
+                    <span class="badge bg-primary fs-6">{{ reserva.get_estado_display }}</span>
+                {% elif reserva.estado == 'cancelada' %}
+                    <span class="badge bg-danger fs-6">{{ reserva.get_estado_display }}</span>
+                {% else %}
+                    <span class="badge bg-warning fs-6">{{ reserva.get_estado_display }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-plane-departure"></i> Información del Vuelo</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Código:</strong></td>
+                                <td>{{ reserva.vuelo.codigo_vuelo }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ruta:</strong></td>
+                                <td>{{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha Salida:</strong></td>
+                                <td>{{ reserva.vuelo.fecha_salida|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha Llegada:</strong></td>
+                                <td>{{ reserva.vuelo.fecha_llegada|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Avión:</strong></td>
+                                <td>{{ reserva.vuelo.avion.modelo }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Asiento:</strong></td>
+                                <td><span class="badge bg-info">{{ reserva.asiento.numero }}</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-user"></i> Información del Pasajero</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nombre:</strong></td>
+                                <td>{{ reserva.pasajero.nombre }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Documento:</strong></td>
+                                <td>{{ reserva.pasajero.get_tipo_documento_display }}: {{ reserva.pasajero.documento }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ reserva.pasajero.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Teléfono:</strong></td>
+                                <td>{{ reserva.pasajero.telefono }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Precio:</strong></td>
+                                <td><h4 class="text-primary">${{ reserva.precio }}</h4></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha Reserva:</strong></td>
+                                <td>{{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if reserva.estado in 'confirmada,pagada' %}
+                    <div class="text-center mt-4">
+                        {% if reserva.boleto %}
+                            <a href="{% url 'gestion_vuelos:ver_boleto' reserva.boleto.id %}" class="btn btn-info btn-lg">
+                                <i class="fas fa-ticket-alt"></i> Ver Boleto Electrónico
+                            </a>
+                        {% else %}
+                            <a href="{% url 'gestion_vuelos:generar_boleto' reserva.id %}" class="btn btn-success btn-lg">
+                                <i class="fas fa-plus"></i> Generar Boleto Electrónico
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'gestion_vuelos:cancelar_reserva' reserva.id %}" class="btn btn-outline-danger btn-lg ms-2">
+                            <i class="fas fa-times"></i> Cancelar Reserva
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Estado de la Reserva</h5>
+            </div>
+            <div class="card-body">
+                {% if reserva.estado == 'pendiente' %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock"></i> Tu reserva está pendiente de confirmación.
+                    </div>
+                {% elif reserva.estado == 'confirmada' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check"></i> Tu reserva está confirmada. ¡Ya puedes generar tu boleto!
+                    </div>
+                {% elif reserva.estado == 'pagada' %}
+                    <div class="alert alert-primary">
+                        <i class="fas fa-credit-card"></i> Reserva pagada y confirmada.
+                    </div>
+                {% elif reserva.estado == 'cancelada' %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times"></i> Esta reserva ha sido cancelada.
+                    </div>
+                {% endif %}
+                
+                <h6>Información Adicional:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-clock"></i> Llega al aeropuerto 2 horas antes</li>
+                    <li><i class="fas fa-id-card"></i> Presenta tu documento de identidad</li>
+                    <li><i class="fas fa-suitcase"></i> Revisa las políticas de equipaje</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'gestion_vuelos:mis_reservas' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a Mis Reservas
+    </a>
+</div>
+{% endblock %}

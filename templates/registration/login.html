@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión - AeroGestión{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5 col-md-7">
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user-circle" style="font-size: 3rem; color: var(--primary-blue);"></i>
+                </div>
+                <h4 class="mb-0">Iniciar Sesión</h4>
+                <p class="mb-0 mt-2" style="opacity: 0.8;">Accede a tu cuenta de AeroGestión</p>
+            </div>
+            <div class="card-body" style="padding: 2rem;">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <div>
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-2"></i>Usuario
+                        </label>
+                        <input type="text" 
+                               class="form-control form-control-lg" 
+                               id="{{ form.username.id_for_label }}"
+                               name="{{ form.username.name }}"
+                               placeholder="Ingresa tu nombre de usuario"
+                               required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Contraseña
+                        </label>
+                        <input type="password" 
+                               class="form-control form-control-lg" 
+                               id="{{ form.password.id_for_label }}"
+                               name="{{ form.password.name }}"
+                               placeholder="Ingresa tu contraseña"
+                               required>
+                    </div>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center">
+                    <div class="d-flex align-items-center mb-3">
+                        <hr class="flex-grow-1">
+                        <span class="px-3 text-muted">o</span>
+                        <hr class="flex-grow-1">
+                    </div>
+                    <p class="mb-0">
+                        ¿No tienes cuenta? 
+                        <a href="{% url 'gestion_vuelos:registro' %}" class="text-decoration-none fw-bold">
+                            Regístrate aquí
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="text-center mt-4">
+            <div class="card" style="background: rgba(255,255,255,0.8); border: none;">
+                <div class="card-body py-3">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Tus datos están protegidos con encriptación de nivel empresarial
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Credenciales de prueba -->
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-5 col-md-7">
+        <div class="card" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: 2px dashed var(--primary-blue);">
+            <div class="card-body text-center py-3">
+                <h6 class="text-primary mb-2">
+                    <i class="fas fa-info-circle me-2"></i>Credenciales de Prueba
+                </h6>
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Administrador:</small>
+                        <code>admin / admin123</code>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Empleado:</small>
+                        <code>empleado / empleado123</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

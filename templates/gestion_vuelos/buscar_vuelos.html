@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Vuelos - Sistema de Gestión de Aerolínea{% endblock %}
+
+{% block content %}
+<h2><i class="fas fa-search"></i> Buscar Vuelos</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-filter"></i> Filtros de Búsqueda</h5>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="{{ form.origen.id_for_label }}" class="form-label">Ciudad de Origen:</label>
+                    {{ form.origen }}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.destino.id_for_label }}" class="form-label">Ciudad de Destino:</label>
+                    {{ form.destino }}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.fecha_salida.id_for_label }}" class="form-label">Fecha de Salida:</label>
+                    {{ form.fecha_salida }}
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                    <a href="{% url 'gestion_vuelos:buscar_vuelos' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if page_obj %}
+    <h4>Resultados de la Búsqueda ({{ page_obj.paginator.count }} vuelos encontrados)</h4>
+    
+    <div class="row">
+        {% for vuelo in page_obj %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ vuelo.codigo_vuelo }}</h5>
+                    <span class="badge bg-success">{{ vuelo.get_estado_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6><i class="fas fa-route"></i> {{ vuelo.origen }} → {{ vuelo.destino }}</h6>
+                            <p class="mb-1">
+                                <i class="fas fa-plane-departure"></i> 
+                                <strong>Salida:</strong> {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}
+                            </p>
+                            <p class="mb-1">
+                                <i class="fas fa-plane-arrival"></i> 
+                                <strong>Llegada:</strong> {{ vuelo.fecha_llegada|date:"d/m/Y H:i" }}
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-plane"></i> {{ vuelo.avion.modelo }}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h4 class="text-primary">${{ vuelo.precio_base }}</h4>
+                            <span class="badge bg-info">
+                                {{ vuelo.asientos_disponibles }} disponibles
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="{% url 'gestion_vuelos:detalle_vuelo' vuelo.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> Ver Detalles
+                        </a>
+                        {% if user.is_authenticated and not vuelo.esta_lleno %}
+                            <a href="{% url 'gestion_vuelos:crear_reserva' vuelo.id %}" class="btn btn-primary">
+                                <i class="fas fa-ticket-alt"></i> Reservar
+                            </a>
+                        {% elif vuelo.esta_lleno %}
+                            <button class="btn btn-secondary" disabled>Completo</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+        <nav aria-label="Paginación de resultados">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page=1">Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h4>No se encontraron vuelos</h4>
+        <p class="text-muted">Intenta modificar los criterios de búsqueda.</p>
+    </div>
+{% endif %}
+{% endblock %}

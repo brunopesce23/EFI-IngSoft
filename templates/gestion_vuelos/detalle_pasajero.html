@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Pasajero {{ pasajero.nombre }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5><i class="fas fa-user"></i> Datos del Pasajero</h5>
+      </div>
+      <div class="card-body">
+        <table class="table table-borderless mb-0">
+          <tr><td><strong>Nombre:</strong></td><td>{{ pasajero.nombre }}</td></tr>
+          <tr><td><strong>Documento:</strong></td><td>{{ pasajero.get_tipo_documento_display }}: {{ pasajero.documento }}</td></tr>
+          <tr><td><strong>Email:</strong></td><td>{{ pasajero.email }}</td></tr>
+          <tr><td><strong>Teléfono:</strong></td><td>{{ pasajero.telefono|default:"-" }}</td></tr>
+          <tr><td><strong>Edad:</strong></td><td>{{ pasajero.edad }} años</td></tr>
+          <tr><td><strong>Registrado:</strong></td><td>{{ pasajero.fecha_registro|date:"d/m/Y H:i" }}</td></tr>
+        </table>
+      </div>
+    </div>
+    <a href="{% url 'gestion_vuelos:lista_pasajeros' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Volver a Pasajeros
+    </a>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-ticket-alt"></i> Reservas de {{ pasajero.nombre }}</h5>
+        <span class="badge bg-info">Total: {{ reservas.count }}</span>
+      </div>
+      <div class="card-body">
+        {% if reservas %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Vuelo</th>
+                  <th>Ruta</th>
+                  <th>Asiento</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in reservas %}
+                  <tr>
+                    <td><code>{{ r.codigo_reserva }}</code></td>
+                    <td>{{ r.vuelo.codigo_vuelo }}</td>
+                    <td>{{ r.vuelo.origen }} → {{ r.vuelo.destino }}</td>
+                    <td><span class="badge bg-info">{{ r.asiento.numero }}</span></td>
+                    <td>
+                      {% if r.estado == 'confirmada' %}
+                        <span class="badge bg-success">{{ r.get_estado_display }}</span>
+                      {% elif r.estado == 'pagada' %}
+                        <span class="badge bg-primary">{{ r.get_estado_display }}</span>
+                      {% elif r.estado == 'cancelada' %}
+                        <span class="badge bg-danger">{{ r.get_estado_display }}</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark">{{ r.get_estado_display }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ r.fecha_reserva|date:"d/m/Y H:i" }}</td>
+                    <td class="text-end">
+                      <a href="{% url 'gestion_vuelos:detalle_reserva' r.id %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-eye"></i> Ver
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-info mb-0">
+            <i class="fas fa-info-circle"></i> No hay reservas registradas para este pasajero.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

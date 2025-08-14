@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Reserva - {{ vuelo.codigo_vuelo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .seat-selector {
+        display: grid;
+        gap: 8px;
+        justify-content: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        margin: 20px 0;
+    }
+
+    .seat-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .row-number {
+        width: 30px;
+        text-align: center;
+        font-weight: bold;
+        color: #1e3a8a;
+        font-size: 14px;
+    }
+
+    .col-letters {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        padding-left: 30px; /* compensa la columna de números */
+        color: #6b7280;
+        font-weight: 700;
+        font-size: 12px;
+    }
+    .col-letter {
+        width: 40px;
+        text-align: center;
+    }
+    .col-spacer {
+        width: 20px;
+        text-align: center;
+    }
+
+    .seat {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
+        position: relative;
+        user-select: none;
+    }
+
+    .seat.available {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 3px 6px rgba(16, 185, 129, 0.3);
+    }
+    .seat.available:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+        border-color: #065f46;
+    }
+
+    .seat.occupied {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        cursor: not-allowed;
+        box-shadow: 0 3px 6px rgba(239, 68, 68, 0.3);
+    }
+
+    /* FALTA: estado mantenimiento/no disponible */
+    .seat.maintenance {
+        background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        color: #374151;
+        cursor: not-allowed;
+        box-shadow: inset 0 0 0 2px #9ca3af33;
+    }
+
+    .seat.selected {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: white;
+        border-color: #9a3412;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(249, 115, 22, 0.4);
+    }
+    .seat.selected::after {
+        content: '✓';
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #065f46;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    }
+
+    .airplane-body {
+        background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        border-radius: 20px;
+        padding: 20px;
+        position: relative;
+        overflow-x: auto;
+    }
+    .airplane-body::before {
+        content: '✈️';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 24px;
+    }
+
+    .aisle {
+        width: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .seat-legend {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 15px;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .legend-seat {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    }
+    /* FALTABA: colores de la leyenda */
+    .legend-seat.available { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .legend-seat.occupied  { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .legend-seat.selected  { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+    .legend-seat.maintenance { background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); }
+    
+    .selected-seat-info {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .price-summary {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const seats = document.querySelectorAll('.seat.available');
+    const selectedSeatInfo = document.getElementById('selected-seat-info');
+    const confirmButton = document.getElementById('confirm-button');
+    const asientoInput = document.getElementById('asiento-input');
+    let selectedSeat = null;
+
+    seats.forEach(seat => {
+        seat.addEventListener('click', function() {
+            // deseleccionar anterior
+            if (selectedSeat) selectedSeat.classList.remove('selected');
+
+            // seleccionar nuevo
+            this.classList.add('selected');
+            selectedSeat = this;
+
+            const seatNumber = this.getAttribute('data-seat');
+            const seatId = this.getAttribute('data-seat-id');
+
+            selectedSeatInfo.innerHTML = `
+                <h6 class="mb-1"><i class="fas fa-check-circle"></i> Asiento Seleccionado</h6>
+                <p class="mb-0">Asiento: <strong>${seatNumber}</strong></p>
+            `;
+            selectedSeatInfo.style.display = 'block';
+
+            confirmButton.disabled = false;
+            asientoInput.value = seatId;
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+                <h4 class="mb-0"><i class="fas fa-ticket-alt"></i> Seleccionar Asiento - {{ vuelo.codigo_vuelo }}</h4>
+            </div>
+            <div class="card-body">
+                <!-- Información del vuelo -->
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-plane-departure"></i> Información del Vuelo</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Ruta:</strong> {{ vuelo.origen }} → {{ vuelo.destino }}</p>
+                            <p class="mb-1"><strong>Fecha:</strong> {{ vuelo.fecha_salida|date:"d/m/Y" }}</p>
+                            <p class="mb-0"><strong>Hora:</strong> {{ vuelo.fecha_salida|date:"H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Avión:</strong> {{ vuelo.avion.modelo }}</p>
+                            <p class="mb-1"><strong>Precio:</strong> ${{ vuelo.precio_base }}</p>
+                            <p class="mb-0"><strong>Disponibles:</strong> {{ vuelo.asientos_disponibles }} asientos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cabecera de columnas (A, B, C | D E F G | H I J) -->
+                {% if filas_asientos and filas_asientos.0.asientos %}
+                <div class="col-letters">
+                    <span class="col-letter">{{ filas_asientos.0.asientos.0.asiento.columna }}</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.1.asiento.columna }}</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.2.asiento.columna }}</span>
+                    <span class="col-spacer">│</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.3.asiento.columna }}</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.4.asiento.columna }}</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.5.asiento.columna }}</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.6.asiento.columna }}</span>
+                    <span class="col-spacer">│</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.7.asiento.columna }}</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.8.asiento.columna }}</span>
+                    <span class="col-letter">{{ filas_asientos.0.asientos.9.asiento.columna }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Selector visual de asientos -->
+                <div class="airplane-body">
+                    <h6 class="text-center mb-3"><i class="fas fa-mouse-pointer"></i> Hacé clic en un asiento disponible (verde)</h6>
+                    {% for fila in filas_asientos %}
+                        <div class="seat-row">
+                            <div class="row-number">{{ fila.numero }}</div>
+
+                            {# Primer bloque (3) #}
+                            {% for asiento_info in fila.asientos|slice:":3" %}
+                                <div class="seat {% if asiento_info.ocupado %}occupied{% elif asiento_info.disponible %}available{% else %}maintenance{% endif %}"
+                                     data-seat="{{ asiento_info.asiento.numero }}"
+                                     data-seat-id="{{ asiento_info.asiento.id }}"
+                                     title="Asiento {{ asiento_info.asiento.numero }} - {% if asiento_info.ocupado %}Ocupado{% elif asiento_info.disponible %}Disponible{% else %}No disponible{% endif %}">
+                                    {{ asiento_info.asiento.columna }}
+                                </div>
+                            {% endfor %}
+
+                            <div class="aisle">│</div>
+
+                            {# Segundo bloque (4) #}
+                            {% for asiento_info in fila.asientos|slice:"3:7" %}
+                                <div class="seat {% if asiento_info.ocupado %}occupied{% elif asiento_info.disponible %}available{% else %}maintenance{% endif %}"
+                                     data-seat="{{ asiento_info.asiento.numero }}"
+                                     data-seat-id="{{ asiento_info.asiento.id }}"
+                                     title="Asiento {{ asiento_info.asiento.numero }} - {% if asiento_info.ocupado %}Ocupado{% elif asiento_info.disponible %}Disponible{% else %}No disponible{% endif %}">
+                                    {{ asiento_info.asiento.columna }}
+                                </div>
+                            {% endfor %}
+
+                            <div class="aisle">│</div>
+
+                            {# Tercer bloque (3) #}
+                            {% for asiento_info in fila.asientos|slice:"7:10" %}
+                                <div class="seat {% if asiento_info.ocupado %}occupied{% elif asiento_info.disponible %}available{% else %}maintenance{% endif %}"
+                                     data-seat="{{ asiento_info.asiento.numero }}"
+                                     data-seat-id="{{ asiento_info.asiento.id }}"
+                                     title="Asiento {{ asiento_info.asiento.numero }} - {% if asiento_info.ocupado %}Ocupado{% elif asiento_info.disponible %}Disponible{% else %}No disponible{% endif %}">
+                                    {{ asiento_info.asiento.columna }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <div class="legend-seat available"></div>
+                        <span>Disponible</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-seat occupied"></div>
+                        <span>Ocupado</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-seat maintenance"></div>
+                        <span>No disponible</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-seat selected"></div>
+                        <span>Seleccionado</span>
+                    </div>
+                </div>
+
+                <!-- Información del asiento seleccionado -->
+                <div id="selected-seat-info" class="selected-seat-info" style="display: none;"></div>
+
+                <!-- Formulario de confirmación -->
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" id="asiento-input" name="asiento_id" value="">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'gestion_vuelos:detalle_vuelo' vuelo.id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" id="confirm-button" class="btn btn-success btn-lg" disabled>
+                            <i class="fas fa-check"></i> Confirmar Reserva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información de Reserva</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Reserva gratuita</li>
+                    <li><i class="fas fa-check text-success"></i> Confirmación inmediata</li>
+                    <li><i class="fas fa-check text-success"></i> Cambios permitidos</li>
+                    <li><i class="fas fa-check text-success"></i> Cancelación flexible</li>
+                </ul>
+
+                <div class="price-summary">
+                    <h6><i class="fas fa-calculator"></i> Resumen de Precio</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>Precio base:</span>
+                        <span>${{ vuelo.precio_base }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tasas:</span>
+                        <span>$0</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong>${{ vuelo.precio_base }}</strong>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h6>Políticas de Reserva:</h6>
+                <small class="text-muted">
+                    • Las reservas se confirman automáticamente<br>
+                    • Podés cancelar hasta 24h antes del vuelo<br>
+                    • El asiento se asigna al momento de la reserva<br>
+                    • Cambios de asiento sujetos a disponibilidad
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

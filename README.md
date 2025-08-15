@@ -1,222 +1,101 @@
-# Sistema de Gestión de Aerolínea
+# Proyecto Sistema de Aerolínea (Django)
 
-Sistema web completo desarrollado en Django para la gestión integral de una aerolínea, incluyendo vuelos, reservas, pasajeros y reportes.
+## 📌 Descripción general
+Este proyecto es un sistema web desarrollado como trabajo práctico integrador para la materia Ingeniería de Software.  
+Permite la **gestión de vuelos y paquetes turísticos**, con carga de datos, visualización y administración desde el panel de Django.
 
-## Características Principales
+## 📁 Estructura del proyecto
+/aerolinea_project
+├── settings.py # Configuración general del proyecto
+├── urls.py # Rutas principales
+└── wsgi.py / asgi.py # Configuración de despliegue
 
-### Funcionalidades Implementadas
+/gestion_vuelos
+├── migrations/ # Migraciones de base de datos
+├── templates/ # Plantillas HTML específicas del módulo
+├── models.py # Modelos de Vuelos, Paquetes, Asientos, etc.
+├── views.py # Lógica de vistas
+├── urls.py # Rutas del módulo
+└── admin.py # Configuración de Django admin
 
-1. **Gestión de Vuelos**
-   - Crear, editar y eliminar vuelos desde el panel de administración
-   - Visualización de vuelos disponibles para usuarios
-   - Información completa: origen, destino, fechas, duración, precios
-   - Asignación automática de aviones a vuelos
+/templates
+├── base.html # Plantilla base
+├── gestion_vuelos/ # Vistas como lista_vuelos, detalle_vuelo, paquetes
+└── registration/ # Plantillas para login y registro
 
-2. **Gestión de Pasajeros**
-   - Registro completo de pasajeros con validaciones
-   - Información personal: nombre, documento, contacto, fecha de nacimiento
-   - Historial completo de vuelos por pasajero
-   - Validación de documentos únicos
+/static
+└── (archivos estáticos: CSS, imágenes, etc.)
 
-3. **Sistema de Reservas**
-   - Visualización de disponibilidad de asientos en tiempo real
-   - Reserva de asientos específicos con mapa visual
-   - Gestión de estados: disponible, reservado, ocupado
-   - Códigos de reserva únicos generados automáticamente
-   - Validaciones para evitar dobles reservas
+manage.py # Script principal de Django
+requirements.txt # Dependencias del proyecto
 
-4. **Gestión de Aviones**
-   - Registro completo de la flota
-   - Definición automática de layout de asientos
-   - Información técnica: modelo, capacidad, configuración
-   - Creación automática de asientos basada en filas y columnas
+bash
+Copiar
+Editar
 
-5. **Sistema de Boletos Electrónicos**
-   - Generación automática de boletos para reservas confirmadas
-   - Códigos de barras únicos
-   - Estados de boletos: emitido, usado, cancelado
+## 🧩 Funcionalidades
+✅ Carga y visualización de vuelos nacionales e internacionales  
+✅ Gestión de paquetes turísticos  
+✅ Sistema de plantillas con herencia (`base.html`)  
+✅ Panel de administración de Django para CRUD completo  
+✅ Separación de modelos, vistas y rutas  
 
-6. **Reportes y Estadísticas**
-   - Dashboard con estadísticas generales
-   - Listado detallado de pasajeros por vuelo
-   - Reportes de ocupación y ingresos
-   - Filtros y búsquedas avanzadas
+## 🚀 Instrucciones para correr el proyecto
 
-7. **Sistema de Autenticación**
-   - Registro e inicio de sesión de usuarios
-   - Roles diferenciados: administrador, empleado, cliente
-   - Perfiles de usuario extendidos
-   - Protección de rutas según permisos
-
-## Tecnologías Utilizadas
-
-- **Backend**: Django 4.2.7
-- **Base de Datos**: SQLite (local)
-- **Frontend**: HTML5, CSS3, Bootstrap 5
-- **JavaScript**: Vanilla JS para interactividad
-- **Iconos**: Font Awesome 6
-
-## Estructura del Proyecto
-
-\`\`\`
-aerolinea_project/
-├── aerolinea_project/          # Configuración principal
-│   ├── settings.py            # Configuraciones de Django
-│   ├── urls.py               # URLs principales
-│   └── wsgi.py               # Configuración WSGI
-├── gestion_vuelos/            # Aplicación principal
-│   ├── models.py             # Modelos de datos
-│   ├── views.py              # Vistas y lógica de negocio
-│   ├── forms.py              # Formularios
-│   ├── admin.py              # Configuración del admin
-│   └── urls.py               # URLs de la aplicación
-├── templates/                 # Plantillas HTML
-│   ├── base.html             # Plantilla base
-│   ├── gestion_vuelos/       # Plantillas específicas
-│   └── registration/         # Plantillas de autenticación
-├── scripts/                   # Scripts de utilidad
-│   └── crear_datos_ejemplo.py # Script para datos de prueba
-├── requirements.txt           # Dependencias
-└── README.md                 # Este archivo
-\`\`\`
-
-## Instalación y Configuración
-
-### 1. Requisitos Previos
-- Python 3.8 o superior
-- pip (gestor de paquetes de Python)
-
-### 2. Instalación
-
-\`\`\`bash
-# Clonar o descargar el proyecto
-cd sistema-aerolinea
-
-# Crear entorno virtual (recomendado)
-python -m venv venv
-
-# Activar entorno virtual
-# En Windows:
-venv\Scripts\activate
-# En Linux/Mac:
-source venv/bin/activate
-
-# Instalar dependencias
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/brunopesce23/EFI-IngSoft
+cd EFI-IngSoft
+2. Crear y activar entorno virtual
+bash
+Copiar
+Editar
+python -m venv .venv
+source .venv/bin/activate
+3. Instalar dependencias
+bash
+Copiar
+Editar
 pip install -r requirements.txt
-\`\`\`
-
-### 3. Configuración de la Base de Datos
-
-\`\`\`bash
-# Crear migraciones
-python manage.py makemigrations
-
-# Aplicar migraciones
+4. Aplicar migraciones
+bash
+Copiar
+Editar
 python manage.py migrate
-
-# Crear datos de ejemplo (opcional)
-python scripts/crear_datos_ejemplo.py
-\`\`\`
-
-### 4. Ejecutar el Servidor
-
-\`\`\`bash
-# Iniciar servidor de desarrollo
+5. Crear superusuario (opcional)
+bash
+Copiar
+Editar
+python manage.py createsuperuser
+6. Levantar el servidor
+bash
+Copiar
+Editar
 python manage.py runserver
+Servidor disponible en: http://127.0.0.1:8000/
 
-# El sistema estará disponible en: http://localhost:8000
-\`\`\`
+🛠️ Tecnologías utilizadas
+Backend:
 
-## Credenciales de Acceso
+Python 3.10+
 
-Después de ejecutar el script de datos de ejemplo:
+Django 4.x
 
-- **Administrador**: `admin` / `admin123`
-- **Empleado**: `empleado` / `empleado123`
+SQLite (desarrollo)
 
-Panel de administración: http://localhost:8000/admin/
+Frontend (templates):
 
-## Modelos de Datos
+HTML5
 
-### Entidades Principales
+CSS3
 
-1. **Avión**: Información de la flota (modelo, capacidad, configuración)
-2. **Vuelo**: Detalles de vuelos (origen, destino, fechas, precios)
-3. **Pasajero**: Información personal de pasajeros
-4. **Asiento**: Configuración de asientos por avión
-5. **Reserva**: Reservas de vuelos con asientos específicos
-6. **Boleto**: Boletos electrónicos generados
-7. **PerfilUsuario**: Extensión de usuarios con roles
+Django Template Language (DTL)
 
-### Relaciones Implementadas
+📝 Consigna cumplida
+CRUD funcional para vuelos y paquetes turísticos
 
-- Avión → Vuelo (1:N)
-- Vuelo → Reserva (1:N)
-- Pasajero → Reserva (1:N)
-- Asiento → Reserva (1:1)
-- Reserva → Boleto (1:1)
+Gestión desde panel de administración de Django
 
-## Funcionalidades por Rol
+Sistema de plantillas con herencia
 
-### Administrador
-- Acceso completo al panel de administración
-- Gestión de vuelos, aviones, pasajeros
-- Visualización de todos los reportes
-- Gestión de usuarios y permisos
-
-### Empleado
-- Acceso al panel de administración
-- Gestión de reservas y pasajeros
-- Generación de reportes
-- Consulta de información de vuelos
-
-### Cliente
-- Búsqueda y visualización de vuelos
-- Creación de reservas
-- Gestión de sus propias reservas
-- Visualización de boletos
-
-## Validaciones Implementadas
-
-- **Documentos únicos**: No se permiten pasajeros con documentos duplicados
-- **Asientos únicos**: Un asiento no puede reservarse más de una vez por vuelo
-- **Reservas únicas**: Un pasajero no puede tener múltiples reservas en el mismo vuelo
-- **Fechas válidas**: Validación de fechas de vuelos y nacimiento
-- **Estados consistentes**: Los estados de asientos se actualizan automáticamente
-
-## Características Técnicas
-
-### Seguridad
-- Protección CSRF habilitada
-- Validación de formularios en backend y frontend
-- Autenticación requerida para operaciones sensibles
-- Roles y permisos diferenciados
-
-### Performance
-- Consultas optimizadas con select_related y prefetch_related
-- Paginación en listados extensos
-- Índices en campos de búsqueda frecuente
-
-### Usabilidad
-- Interfaz responsive con Bootstrap
-- Mensajes informativos para el usuario
-- Navegación intuitiva
-- Búsquedas y filtros avanzados
-
-## Posibles Mejoras Futuras
-
-1. **Integración de Pagos**: Pasarela de pagos para reservas
-2. **Notificaciones**: Sistema de emails automáticos
-3. **API REST**: Endpoints para integración con apps móviles
-4. **Reportes Avanzados**: Gráficos y estadísticas más detalladas
-5. **Gestión de Equipaje**: Módulo para manejo de equipaje
-6. **Check-in Online**: Sistema de check-in digital
-7. **Multiidioma**: Soporte para múltiples idiomas
-
-## Soporte y Contacto
-
-Para consultas técnicas o reportar problemas, contactar al equipo de desarrollo.
-
----
-
-**Desarrollado con Django para la Evaluación Final Integradora**
+Base de datos SQLite para desarrollo

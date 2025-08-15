@@ -104,7 +104,6 @@ def detalle_vuelo(request, vuelo_id):
         estado__in=['confirmada', 'pagada']
     ).values_list('asiento_id', flat=True)
     
-    # Matriz para template
     matriz = {}
     for a in asientos:
         matriz.setdefault(a.fila, {})
@@ -177,7 +176,6 @@ def crear_reserva(request, vuelo_id):
                         'fecha_nacimiento': timezone.now().date(),
                     }
                 )
-                # Crear reserva
                 reserva = Reserva.objects.create(
                     vuelo=vuelo,
                     pasajero=pasajero,
@@ -192,7 +190,6 @@ def crear_reserva(request, vuelo_id):
         else:
             messages.error(request, 'Debe seleccionar un asiento.')
     
-    # Preparar matriz de asientos
     asientos = vuelo.avion.asientos.all().order_by('fila', 'columna')
     asientos_reservados = Reserva.objects.filter(vuelo=vuelo, estado__in=['confirmada', 'pagada']).values_list('asiento_id', flat=True)
     matriz = {}
@@ -311,7 +308,6 @@ def generar_boleto(request, reserva_id):
     return redirect('gestion_vuelos:ver_boleto', boleto_id=boleto.id)
 
 
-# ----------- NUEVO: Paquetes -----------
 def lista_paquetes(request):
     """Listado de paquetes turísticos (visible a todos)"""
     paquetes = Paquete.objects.filter(activo=True).order_by('-creado')

@@ -1,5 +1,3 @@
-# gestion_vuelos/context_processors.py
-
 def es_admin_global(request):
     """
     Devuelve un booleano 'es_admin_global' para el navbar.

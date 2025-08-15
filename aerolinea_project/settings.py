@@ -24,7 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'gestion_vuelos',  # Nuestra aplicación principal
+    'gestion_vuelos',
 ]
 
 MIDDLEWARE = [
@@ -42,7 +42,6 @@ ROOT_URLCONF = 'aerolinea_project.urls'
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # OJO: esta ruta estaba mal. Debe apuntar a /templates en la raíz del proyecto
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -51,7 +50,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # Context processor para mostrar opciones de admin en el navbar
                 "gestion_vuelos.context_processors.es_admin_global",
             ],
         },
@@ -85,7 +83,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # asegurate de que esta carpeta exista
+    BASE_DIR / 'static', 
 ]
 
 # Media files

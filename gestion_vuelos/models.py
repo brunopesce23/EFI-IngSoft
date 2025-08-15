@@ -1,7 +1,5 @@
-# gestion_vuelos/models.py
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 from datetime import datetime
 
@@ -23,9 +21,27 @@ class Avion(models.Model):
     
     def save(self, *args, **kwargs):
         # Calcular capacidad automáticamente
-        if self.filas and self.columnas:
-            self.capacidad = self.filas * self.columnas
+        self.capacidad = self.filas * self.columnas
         super().save(*args, **kwargs)
+        
+        # Crear asientos automáticamente si no existen
+        if not self.asientos.exists():
+            self.crear_asientos()
+    
+    def crear_asientos(self):
+        """Crear asientos automáticamente basado en filas y columnas"""
+        letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        for fila in range(1, self.filas + 1):
+            for col in range(self.columnas):
+                letra = letras[col]
+                numero = f"{fila}{letra}"
+                Asiento.objects.create(
+                    avion=self,
+                    numero=numero,
+                    fila=fila,
+                    columna=letra,
+                    tipo='economica'
+                )
 
 
 class Vuelo(models.Model):
@@ -62,19 +78,6 @@ class Vuelo(models.Model):
         if self.fecha_salida and self.fecha_llegada:
             self.duracion = self.fecha_llegada - self.fecha_salida
         super().save(*args, **kwargs)
-            # ¿Es un vuelo dentro de Argentina?
-    def es_domestico_ar(self) -> bool:
-        return _es_argentina(self.origen) and _es_argentina(self.destino)
-
-    # Etiqueta de moneda para mostrar: 'ARS $' o 'USD '
-    def etiqueta_moneda(self) -> str:
-        return "ARS $" if self.es_domestico_ar() else "USD "
-
-    # Texto listo para mostrar, p.ej. "USD 499.99" o "ARS $ 120000.00"
-    def precio_display(self) -> str:
-        return f"{self.etiqueta_moneda()}{self.precio_base}"
-
-    
     
     @property
     def asientos_disponibles(self):
@@ -87,26 +90,6 @@ class Vuelo(models.Model):
     def esta_lleno(self):
         """Verifica si el vuelo está lleno"""
         return self.asientos_disponibles <= 0
-
-# --- helpers para moneda/país en Vuelo (NO requieren migraciones) ---
-
-# Lista simple de ciudades/provincias de Argentina que usamos en los seeds y pantallas.
-# Si en tus datos usás "Buenos Aires (EZE)" o similares, también matchea por prefijo.
-AR_CIUDADES = {
-    "buenos aires", "eze", "ezeiza", "cordoba", "córdoba", "mdz", "mendoza", "rosario",
-    "salta", "neuquen", "neuquén", "bariloche", "ushuaia", "iguazu", "iguazú",
-    "mar del plata", "tucuman", "tucumán", "san juan", "san luis", "posadas", "resistencia",
-    "bahia blanca", "bahía blanca", "comodoro rivadavia", "trelew"
-}
-
-def _es_argentina(texto: str) -> bool:
-    if not texto:
-        return False
-    t = texto.strip().lower()
-    # limpiar cosas como "Buenos Aires (EZE)" -> "buenos aires"
-    if "(" in t:
-        t = t.split("(")[0].strip()
-    return any(ciudad in t for ciudad in AR_CIUDADES) or "argentina" in t
 
 
 class Pasajero(models.Model):
@@ -131,13 +114,6 @@ class Pasajero(models.Model):
         
     def __str__(self):
         return f"{self.nombre} - {self.documento}"
-    
-    @property
-    def edad(self):
-        """Calcula la edad del pasajero"""
-        from datetime import date
-        today = date.today()
-        return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
 
 
 class Asiento(models.Model):
@@ -159,7 +135,7 @@ class Asiento(models.Model):
     numero = models.CharField(max_length=10, verbose_name="Número de asiento")
     fila = models.PositiveIntegerField(verbose_name="Fila")
     columna = models.CharField(max_length=1, verbose_name="Columna")
-    tipo = models.CharField(max_length=20, choices=TIPOS_ASIENTO, default='economica')  # <<< FIX: max_length
+    tipo = models.CharField(max_length=20, choices=TIPOS_ASIENTO, default='economica')
     estado = models.CharField(max_length=20, choices=ESTADOS_ASIENTO, default='disponible')
     
     class Meta:
@@ -193,29 +169,27 @@ class Reserva(models.Model):
     class Meta:
         verbose_name = "Reserva"
         verbose_name_plural = "Reservas"
-        unique_together = ['vuelo', 'asiento']  # Un asiento no puede estar reservado más de una vez por vuelo
+        unique_together = ['vuelo', 'asiento']
         ordering = ['-fecha_reserva']
         
     def __str__(self):
         return f"Reserva {self.codigo_reserva} - {self.pasajero.nombre}"
     
     def save(self, *args, **kwargs):
-        # Generar código de reserva único si está vacío
+        # Generar código de reserva único
         if not self.codigo_reserva:
             self.codigo_reserva = str(uuid.uuid4())[:8].upper()
-        # Establecer precio basado en el vuelo si no está seteado
+        # Establecer precio basado en el vuelo si no viene
         if not self.precio:
             self.precio = self.vuelo.precio_base
         super().save(*args, **kwargs)
         # Actualizar estado del asiento
         if self.estado in ['confirmada', 'pagada']:
-            if self.asiento.estado != 'reservado':
-                self.asiento.estado = 'reservado'
-                self.asiento.save(update_fields=['estado'])
+            self.asiento.estado = 'reservado'
+            self.asiento.save()
         elif self.estado == 'cancelada':
-            if self.asiento.estado != 'disponible':
-                self.asiento.estado = 'disponible'
-                self.asiento.save(update_fields=['estado'])
+            self.asiento.estado = 'disponible'
+            self.asiento.save()
 
 
 class Boleto(models.Model):
@@ -239,10 +213,9 @@ class Boleto(models.Model):
         return f"Boleto {self.codigo_barra} - {self.reserva.codigo_reserva}"
     
     def save(self, *args, **kwargs):
-        # Generar código de barras único si está vacío
         if not self.codigo_barra:
             timestamp = str(int(datetime.now().timestamp()))
-            self.codigo_barra = f"BOL{timestamp}{self.reserva.id if self.reserva_id else ''}"
+            self.codigo_barra = f"BOL{timestamp}{self.reserva.id}"
         super().save(*args, **kwargs)
 
 
@@ -267,7 +240,7 @@ class PerfilUsuario(models.Model):
 
 
 class Paquete(models.Model):
-    """Paquetes turísticos para la sección de Paquetes"""
+    """Paquetes turísticos con imagen (para la vista Paquetes)"""
     titulo = models.CharField(max_length=150)
     destino = models.CharField(max_length=120)
     descripcion = models.TextField()

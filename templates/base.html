@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sistema de Gestión de Aerolínea{% endblock %}</title>
     
-    <!-- Google Fonts - Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -34,7 +31,6 @@
             line-height: 1.6;
         }
 
-        /* Navegación */
         .navbar {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%) !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -62,7 +58,6 @@
             transform: translateY(-1px);
         }
 
-        /* Cards */
         .card {
             border: none;
             border-radius: 12px;
@@ -85,7 +80,6 @@
             padding: 1.25rem;
         }
 
-        /* Botones */
         .btn { font-weight: 600; border-radius: 8px; padding: 0.75rem 1.5rem; transition: all 0.3s ease; border: none; }
         .btn-primary { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%); color: var(--neutral-white); }
         .btn-primary:hover { background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,.4); }
@@ -94,51 +88,42 @@
         .btn-warning { background-color: var(--accent-orange); color: var(--neutral-white); }
         .btn-warning:hover { background-color: #ea580c; transform: translateY(-1px); }
 
-        /* Hero */
         .hero-section { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%); color: var(--neutral-white); border-radius: 16px; padding: 3rem; margin-bottom: 2rem; }
         .hero-section h1 { font-weight: 800; font-size: 3rem; margin-bottom: 1rem; }
         .hero-section .lead { font-size: 1.25rem; font-weight: 400; opacity: 0.9; }
 
-        /* Estadísticas */
         .stats-card { text-align: center; padding: 2rem 1rem; border-radius: 12px; background: var(--neutral-white); transition: all 0.3s ease; }
         .stats-card:hover { transform: translateY(-4px); }
         .stats-icon { font-size: 3rem; margin-bottom: 1rem; color: var(--primary-blue); }
         .stats-number { font-size: 2.5rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 0.5rem; }
         .stats-label { font-weight: 500; color: var(--neutral-gray); font-size: 1rem; }
 
-        /* Tablas */
         .table { background-color: var(--neutral-white); border-radius: 8px; overflow: hidden; }
         .table thead th { background-color: var(--neutral-light); border: none; font-weight: 600; color: var(--neutral-dark); padding: 1rem; }
         .table tbody td { padding: 1rem; border-color: #e2e8f0; vertical-align: middle; }
         .table tbody tr:hover { background-color: var(--neutral-light); }
 
-        /* Badges */
         .badge { font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 6px; }
         .bg-success { background-color: #10b981 !important; }
         .bg-info { background-color: var(--primary-blue) !important; }
         .bg-warning { background-color: var(--accent-orange) !important; }
 
-        /* Footer */
         .footer { background: linear-gradient(135deg, var(--neutral-dark) 0%, #475569 100%); color: var(--neutral-white); padding: 3rem 0 2rem; margin-top: 4rem; }
         .footer h5 { font-weight: 700; margin-bottom: 1rem; }
         .footer p { opacity: 0.8; margin-bottom: 0.5rem; }
 
-        /* Alertas */
         .alert { border: none; border-radius: 8px; font-weight: 500; }
 
-        /* Formularios */
         .form-control { border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; font-weight: 500; transition: all 0.3s ease; }
         .form-control:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
         .form-label { font-weight: 600; color: var(--neutral-dark); margin-bottom: 0.5rem; }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .hero-section { padding: 2rem; text-align: center; }
             .hero-section h1 { font-size: 2rem; }
             .stats-card { margin-bottom: 1rem; }
         }
 
-        /* Animaciones */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
         .fade-in-up { animation: fadeInUp 0.6s ease-out; }
     </style>
@@ -147,7 +132,6 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'gestion_vuelos:home' %}">
@@ -207,7 +191,6 @@
         </div>
     </nav>
 
-    <!-- Mensajes -->
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
@@ -219,12 +202,10 @@
     </div>
     {% endif %}
 
-    <!-- Contenido principal -->
     <main class="container mt-4 fade-in-up">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
     <footer class="footer mt-auto">
         <div class="container">
             <div class="row">
@@ -248,7 +229,6 @@
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     {% block extra_js %}{% endblock %}

@@ -41,7 +41,6 @@ def cargar_datos(apps, schema_editor):
     PerfilUsuario = apps.get_model("gestion_vuelos", "PerfilUsuario")
     Paquete = apps.get_model("gestion_vuelos", "Paquete")
 
-    # ----------------- Grupos y permisos -----------------
     admin_group, _ = Group.objects.get_or_create(name="admin_app")
     public_group, _ = Group.objects.get_or_create(name="publico")
     app_perms = Permission.objects.filter(content_type__app_label="gestion_vuelos")
@@ -49,7 +48,6 @@ def cargar_datos(apps, schema_editor):
     public_codes = {"view_vuelo", "view_reserva", "add_reserva"}
     public_group.permissions.set([p for p in app_perms if p.codename in public_codes])
 
-    # ----------------- Usuario admin -----------------
     admin_user, _ = User.objects.get_or_create(
         username="admin",
         defaults={"email": "admin@example.com", "is_staff": True, "is_superuser": True, "first_name": "Admin", "last_name": "Aero"},
@@ -61,7 +59,6 @@ def cargar_datos(apps, schema_editor):
     admin_user.groups.add(admin_group)
     PerfilUsuario.objects.get_or_create(user_id=admin_user.id, defaults={"rol": "admin"})
 
-    # ----------------- Aviones + Asientos -----------------
     aviones_def = [
         ("Boeing 737-800", 20, 6),
         ("Airbus A320", 22, 6),
@@ -81,7 +78,6 @@ def cargar_datos(apps, schema_editor):
         crear_asientos(Asiento, avion, filas, columnas)
         aviones.append(avion)
 
-    # ----------------- Vuelos -----------------
     now = timezone.now()
 
     rutas_nac = [
@@ -111,7 +107,7 @@ def cargar_datos(apps, schema_editor):
                   D("199999.00"),D("799999.00")]
 
     vuelos = []
-    # AR001..AR020 nacionales
+    # nacionales
     for i in range(20):
         codigo = f"AR{(i+1):03d}"
         origen, destino = rutas_nac[i]
@@ -133,7 +129,7 @@ def cargar_datos(apps, schema_editor):
         )
         vuelos.append(vuelo)
 
-    # AI101..AI110 internacionales
+    # vuelosInternacionales
     for i in range(10):
         codigo = f"AI{101+i}"
         origen, destino = rutas_int[i]
@@ -155,7 +151,6 @@ def cargar_datos(apps, schema_editor):
         )
         vuelos.append(vuelo)
 
-    # ----------------- Pasajeros base -----------------
     pasajeros_def = [
         ("Juan Carlos", "DNI10000001", "juan.carlos@example.com", "351-111-1111", date(1990, 5, 10)),
         ("María Elena", "DNI10000002", "maria.elena@example.com", "351-222-2222", date(1988, 7, 22)),

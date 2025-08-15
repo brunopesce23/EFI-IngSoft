@@ -62,7 +62,6 @@ class ReservaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         if self.vuelo:
-            # Filtrar asientos disponibles para este vuelo
             asientos_reservados = Reserva.objects.filter(
                 vuelo=self.vuelo,
                 estado__in=['confirmada', 'pagada']
@@ -79,7 +78,6 @@ class ReservaForm(forms.ModelForm):
         asiento = cleaned_data.get('asiento')
         
         if pasajero and self.vuelo:
-            # Verificar que el pasajero no tenga ya una reserva en este vuelo
             if Reserva.objects.filter(
                 vuelo=self.vuelo,
                 pasajero=pasajero,
@@ -88,7 +86,6 @@ class ReservaForm(forms.ModelForm):
                 raise ValidationError('Este pasajero ya tiene una reserva en este vuelo.')
         
         if asiento and self.vuelo:
-            # Verificar que el asiento no esté ya reservado
             if Reserva.objects.filter(
                 vuelo=self.vuelo,
                 asiento=asiento,
